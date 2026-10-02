@@ -1,0 +1,23 @@
+actua como desarrollador full stack para crear una app web
+para hacer sorteos mediante la api de instagram.
+
+quiero que la app permita ingresar con instagram como login
+para poder acceder a las historias de cada uno.
+
+la idea es poder preparar un sorteo dependiendo de lo que
+elija el usuario, por ejemplo:
+si el usuario elije subir una historia que tiene un
+sticker de preguntas y quiere que las respuestas que
+coincidan con el acierto correcto se añadan a una lista
+para transformarlos en participantes.
+
+de otra manera que si carga una publicacion y poner 
+condiciones como por ejemplo etiquetar a 2 cuentas y dar
+me gusta, o alguna otra condicion.
+
+luego de ingresar al sistema leer y analizar la cuenta del
+usuario logeado para ver las publicaciones o historias que
+tiene para que pueda elegir sobre cual actuar.
+
+la idea es hacer una app, luego crear el entorno para que
+pueda ser deployada en vercel para ser subida a la web.

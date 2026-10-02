@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MediaKind {
+  STORY
+  REEL
+  POST
+}
+
+enum GiveawayStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum RuleType {
+  QUESTION_STICKER
+  MENTIONS
+  FOLLOW
+  LIKE
+  SAVED
+  COMMENT
+}
+
+enum ParticipantStatus {
+  VALID
+  DISQUALIFIED
+}
+
+model User {
+  id       String  @id @default(cuid())
+  name     String?
+  email    String? @unique
+  image    String?
+
+  igId             String?   @unique
+  igUsername       String?
+  igAccessToken    String?
+  igTokenExpiresAt DateTime?
+  igProfilePic     String?
+  igConnectedAt    DateTime?
+
+  media     MediaItem[]
+  giveaways Giveaway[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MediaItem {
+  id           String    @id @default(cuid())
+  userId       String
+  igId         String
+  kind         MediaKind
+  permalink    String?
+  thumbnailUrl String?
+  caption      String?
+  takenAt      DateTime?
+  expiresAt    DateTime?
+
+  hasQuestionSticker Boolean @default(false)
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  giveaways Giveaway[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, igId])
+  @@index([userId, kind])
+}
+
+model Giveaway {
+  id           String         @id @default(cuid())
+  publicSlug   String         @unique @default(cuid())
+  title        String
+  description  String?
+  status       GiveawayStatus @default(DRAFT)
+  winnersCount Int            @default(1)
+  closeAt      DateTime?
+
+  userId  String
+  mediaId String?
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media MediaItem? @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+
+  rules        Rule[]
+  participants Participant[]
+  winners      Winner[]
+
+  drawSeed             String?
+  seedCommitment       String?
+  participantsSnapshot Int?
+  drawnAt              DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+}
+
+model Rule {
+  id             String   @id @default(cuid())
+  giveawayId     String
+  type           RuleType
+  enabled        Boolean  @default(true)
+  amount         Int      @default(1)
+  expectedAnswer String?
+
+  giveaway Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+
+  @@index([giveawayId])
+}
+
+model Participant {
+  id         String            @id @default(cuid())
+  giveawayId String
+  username   String
+  igUserId   String?
+  fullName   String?
+  avatarUrl  String?
+  status     ParticipantStatus @default(VALID)
+  evidence   Json?
+
+  giveaway Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+  winners  Winner[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([giveawayId, username])
+  @@index([giveawayId, status])
+}
+
+model Winner {
+  id            String   @id @default(cuid())
+  giveawayId    String
+  participantId String
+  rank          Int
+  drawnAt       DateTime @default(now())
+
+  giveaway    Giveaway    @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@unique([giveawayId, rank])
+}
